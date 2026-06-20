@@ -90,12 +90,14 @@ export interface MemberProfileUpdateRequest {
   requestedByUserId: string
   requestedByName: string
   fullName: string
+  nic: string
   dateOfBirth: string
   phoneNumber: string
   email: string
   address: string
   area: string
   photoUrl?: string
+  requestedFamilyMembers: FamilyMember[]
   status: ProfileUpdateRequestStatus
   reviewedByUserId?: string
   reviewedAt?: string

@@ -349,12 +349,25 @@ export const insertMemberProfileUpdateRequestRemote = async (request: MemberProf
     requested_by_user_id: request.requestedByUserId,
     requested_by_name: request.requestedByName,
     full_name: request.fullName,
+    nic: request.nic,
     date_of_birth: request.dateOfBirth,
     phone_number: request.phoneNumber,
     email: request.email,
     address: request.address,
     area: request.area,
     photo_url: request.photoUrl ?? null,
+    requested_family_members: request.requestedFamilyMembers.map((familyMember) => ({
+      id: familyMember.id,
+      member_id: familyMember.memberId,
+      relationship_type: familyMember.relationshipType,
+      full_name: familyMember.fullName,
+      nic: familyMember.nic || '',
+      date_of_birth: familyMember.dateOfBirth || '',
+      address: familyMember.address || '',
+      photo_url: familyMember.photoUrl ?? null,
+      created_at: familyMember.createdAt,
+      updated_at: familyMember.updatedAt,
+    })),
     status: request.status,
     reviewed_by_user_id: request.reviewedByUserId ?? null,
     reviewed_at: request.reviewedAt ?? null,
@@ -386,6 +399,7 @@ export const approveMemberProfileUpdateRequestRemote = async (
     .from('members')
     .update({
       full_name: request.fullName,
+      nic: request.nic,
       date_of_birth: request.dateOfBirth,
       phone_number: request.phoneNumber,
       email: request.email,
@@ -422,6 +436,47 @@ export const approveMemberProfileUpdateRequestRemote = async (
 
   if (userError) {
     throw userError
+  }
+
+  const requestedFamilyMembers = request.requestedFamilyMembers.map((familyMember) => ({
+    id: familyMember.id,
+    member_id: request.memberId,
+    relationship_type: familyMember.relationshipType,
+    full_name: familyMember.fullName,
+    nic: familyMember.nic || null,
+    date_of_birth: familyMember.dateOfBirth || null,
+    address: familyMember.address || null,
+    photo_url: familyMember.photoUrl ?? null,
+    created_at: familyMember.createdAt,
+    updated_at: familyMember.updatedAt,
+  }))
+
+  const { data: existingFamilyRows, error: existingFamilyError } = await client
+    .from('family_members')
+    .select('id')
+    .eq('member_id', request.memberId)
+
+  if (existingFamilyError) {
+    throw existingFamilyError
+  }
+
+  if (requestedFamilyMembers.length > 0) {
+    const { error: familyError } = await client.from('family_members').upsert(requestedFamilyMembers, { onConflict: 'id' })
+    if (familyError) {
+      throw familyError
+    }
+  }
+
+  const requestedFamilyIds = new Set(request.requestedFamilyMembers.map((familyMember) => familyMember.id))
+  const familyIdsToDelete = (existingFamilyRows ?? [])
+    .map((row) => String(row.id))
+    .filter((existingId) => !requestedFamilyIds.has(existingId))
+
+  if (familyIdsToDelete.length > 0) {
+    const { error: deleteFamilyError } = await client.from('family_members').delete().in('id', familyIdsToDelete)
+    if (deleteFamilyError) {
+      throw deleteFamilyError
+    }
   }
 
   const { error: requestError } = await client
