@@ -684,8 +684,7 @@ const MembersPage = () => {
             සාමාජිකයන් සහ පවුල් කළමනාකරණය
           </Typography>
           <Typography color="text.secondary">
-            CRUD, wizard registration, family tree, NIC duplicate detection සහ responsive card/table
-            දසුන.
+           
           </Typography>
         </Box>
         <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1}>

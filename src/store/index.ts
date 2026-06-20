@@ -136,9 +136,7 @@ const dataSlice = createSlice({
       }
     },
     collectMonthlyFee: (state, action: PayloadAction<MonthlyFeePayment>) => {
-      const existingIndex = state.monthlyFeePayments.findIndex(
-        (item) => item.memberId === action.payload.memberId && item.feeMonth === action.payload.feeMonth,
-      )
+      const existingIndex = state.monthlyFeePayments.findIndex((item) => item.id === action.payload.id)
       if (existingIndex >= 0) {
         state.monthlyFeePayments[existingIndex] = action.payload
       } else {

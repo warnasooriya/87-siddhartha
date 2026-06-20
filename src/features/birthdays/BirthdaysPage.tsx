@@ -206,9 +206,7 @@ const BirthdaysPage = () => {
         <Typography variant="h4" sx={{ fontWeight: 800 }}>
           උපන්දිනයන් දෘශ්‍යකරණය
         </Typography>
-        <Typography color="text.secondary">
-          දිනදර්ශන දසුන, ඉදිරි උපන්දිනයන් සහ අද විශේෂ දින එකම පිටුවකින් ඉක්මනින් බලන්න.
-        </Typography>
+        
       </Stack>
 
       <Card
@@ -228,9 +226,7 @@ const BirthdaysPage = () => {
                 <Typography variant="h5" sx={{ fontWeight: 800 }}>
                   {formatMonthName(selectedMonth)} උපන්දිනයන්
                 </Typography>
-                <Typography color="text.secondary">
-                  මාසික සැමරුම්, ළඟදීම එන උපන්දිනයන් සහ අද විශේෂ දින ඉතා පහසුවෙන් බලන්න.
-                </Typography>
+                 
               </Stack>
               <Stack direction="row" spacing={1} sx={{ flexWrap: 'wrap' }}>
                 <Chip color="primary" label={`මෙම මාසය ${monthEntries.length}`} />

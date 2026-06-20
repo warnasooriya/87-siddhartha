@@ -1,9 +1,10 @@
-import { Box, Button, Card, CardContent, Chip, Grid, Stack, Typography } from '@mui/material'
+import { useMemo } from 'react'
+import { Button, Card, CardContent, Grid, Stack, Typography } from '@mui/material'
 import { Link as RouterLink } from 'react-router-dom'
 
 import { StatCard } from '../../components/common/StatCard'
-import { isSupabaseConfigured } from '../../services/supabase'
 import { useAppSelector } from '../../store'
+import { buildMonthlyFeeSummaryMap, sumCollectedMonthlyFees } from '../../utils/monthlyFees'
 
 const DashboardPage = () => {
   const { members, auditLogs, financeEntries, monthlyFeeConfigs, monthlyFeePayments, samithiReports } = useAppSelector(
@@ -20,32 +21,37 @@ const DashboardPage = () => {
       0,
     )
   const activeFeeConfig = monthlyFeeConfigs.find((item) => item.isActive)
-  const paidMembersThisMonth = monthlyFeePayments.filter((item) => item.feeMonth === currentMonthLabel && item.status === 'PAID').length
-  const monthlyFeeIncome = monthlyFeePayments
-    .filter((item) => item.feeMonth === currentMonthLabel && item.status === 'PAID')
-    .reduce((sum, item) => sum + item.amount, 0)
+  const monthSummaryMap = useMemo(
+    () => buildMonthlyFeeSummaryMap(monthlyFeePayments, currentMonthLabel, activeFeeConfig?.amount ?? 0),
+    [activeFeeConfig?.amount, currentMonthLabel, monthlyFeePayments],
+  )
+  const paidMembersThisMonth = useMemo(
+    () => members.filter((member) => (monthSummaryMap.get(member.id)?.status ?? 'UNPAID') === 'PAID').length,
+    [members, monthSummaryMap],
+  )
+  const partiallyPaidMembersThisMonth = useMemo(
+    () => members.filter((member) => (monthSummaryMap.get(member.id)?.status ?? 'UNPAID') === 'PARTIAL').length,
+    [members, monthSummaryMap],
+  )
+  const collectedMembersThisMonth = useMemo(
+    () => paidMembersThisMonth + partiallyPaidMembersThisMonth,
+    [paidMembersThisMonth, partiallyPaidMembersThisMonth],
+  )
+  const monthlyFeeIncome = useMemo(
+    () => sumCollectedMonthlyFees(monthlyFeePayments, currentMonthLabel),
+    [currentMonthLabel, monthlyFeePayments],
+  )
   const otherIncomeTotal = financeEntries
     .filter((item) => item.entryType === 'OTHER_INCOME')
     .reduce((sum, item) => sum + item.amount, 0)
   const expensesTotal = financeEntries
     .filter((item) => item.entryType === 'EXPENSE')
     .reduce((sum, item) => sum + item.amount, 0)
-  const totalFeeIncome = monthlyFeePayments
-    .filter((item) => item.status === 'PAID')
-    .reduce((sum, item) => sum + item.amount, 0)
+  const totalFeeIncome = useMemo(() => sumCollectedMonthlyFees(monthlyFeePayments), [monthlyFeePayments])
   const currentBalance = totalFeeIncome + otherIncomeTotal - expensesTotal
 
   return (
     <Stack spacing={3}>
-      <Stack
-        direction={{ xs: 'column', md: 'row' }}
-        spacing={2}
-        sx={{ justifyContent: 'space-between', alignItems: { xs: 'flex-start', md: 'center' } }}
-      >
-        
-        
-      </Stack>
-
       <Grid container spacing={2}>
         <Grid size={{ xs: 12, sm: 6, xl: 3 }}>
           <StatCard title="මුළු සාමාජිකයන්" value={members.length} caption="ප්‍රධාන සාමාජික වාර්තා" />
@@ -106,8 +112,16 @@ const DashboardPage = () => {
               </Typography>
               <Stack spacing={1.5}>
                 <Stack direction="row" sx={{ justifyContent: 'space-between' }}>
-                  <Typography>{currentMonthLabel} ගාස්තු ගෙවූ සාමාජිකයන්</Typography>
+                  <Typography>{currentMonthLabel} ගාස්තු ගෙවීම් සටහන් වූ සාමාජිකයන්</Typography>
+                  <Typography sx={{ fontWeight: 700 }}>{collectedMembersThisMonth}</Typography>
+                </Stack>
+                <Stack direction="row" sx={{ justifyContent: 'space-between' }}>
+                  <Typography>සම්පූර්ණ ගෙවූ සාමාජිකයන්</Typography>
                   <Typography sx={{ fontWeight: 700 }}>{paidMembersThisMonth}</Typography>
+                </Stack>
+                <Stack direction="row" sx={{ justifyContent: 'space-between' }}>
+                  <Typography>කොටස් ගෙවීම් කළ සාමාජිකයන්</Typography>
+                  <Typography sx={{ fontWeight: 700 }}>{partiallyPaidMembersThisMonth}</Typography>
                 </Stack>
                 <Stack direction="row" sx={{ justifyContent: 'space-between' }}>
                   <Typography>වෙනත් ආදායම් සටහන්</Typography>

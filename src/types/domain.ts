@@ -136,6 +136,8 @@ export interface MonthlyFeeConfig {
   isActive: boolean
 }
 
+export type MonthlyFeePaymentStatus = 'PAID' | 'PARTIAL' | 'PENDING'
+
 export interface MonthlyFeePayment {
   id: string
   memberId: string
@@ -143,7 +145,7 @@ export interface MonthlyFeePayment {
   feeMonth: string
   amount: number
   paidDate: string
-  status: 'PAID' | 'PENDING'
+  status: MonthlyFeePaymentStatus
   collectedBy: string
   note?: string
 }

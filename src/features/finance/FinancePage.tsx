@@ -19,6 +19,7 @@ import { useAuth } from '../../hooks/useAuth'
 import { buildAuditEntry, useAppDispatch, useAppSelector } from '../../store'
 import { insertAuditLogRemote, insertFinanceEntryRemote, refreshDataFromSupabase } from '../../services/supabaseMutations'
 import type { FinanceEntry, FinanceEntryType } from '../../types/domain'
+import { sumCollectedMonthlyFees } from '../../utils/monthlyFees'
 
 const currentMonth = new Date().toISOString().slice(0, 7)
 
@@ -41,14 +42,11 @@ const FinancePage = () => {
   const [receivedBy, setReceivedBy] = useState(currentUser?.fullName ?? '')
 
   const feeIncomeTotal = useMemo(
-    () => monthlyFeePayments.filter((payment) => payment.status === 'PAID').reduce((sum, payment) => sum + payment.amount, 0),
+    () => sumCollectedMonthlyFees(monthlyFeePayments),
     [monthlyFeePayments],
   )
   const monthlyFeeIncome = useMemo(
-    () =>
-      monthlyFeePayments
-        .filter((payment) => payment.status === 'PAID' && payment.feeMonth === currentMonth)
-        .reduce((sum, payment) => sum + payment.amount, 0),
+    () => sumCollectedMonthlyFees(monthlyFeePayments, currentMonth),
     [monthlyFeePayments],
   )
   const otherIncomeTotal = useMemo(
