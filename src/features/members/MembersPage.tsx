@@ -132,6 +132,15 @@ const defaultValues: MemberFormValues = {
   children: [emptyRelative()],
 }
 
+const optionalPasswordField = yup
+  .string()
+  .transform((value) => {
+    const trimmedValue = typeof value === 'string' ? value.trim() : value
+    return trimmedValue ? trimmedValue : undefined
+  })
+  .min(6, 'මුරපදය අවම වශයෙන් අක්ෂර 6ක් විය යුතුය')
+  .optional()
+
 const schema = yup.object({
   member: yup.object({
     memberNumber: yup.string().required('අවශ්‍ය වේ'),
@@ -141,15 +150,25 @@ const schema = yup.object({
     gender: yup.mixed<Gender>().required(),
     address: yup.string().required('අවශ්‍ය වේ'),
     phoneNumber: yup.string().required('අවශ්‍ය වේ'),
-    email: yup.string().email('වලංගු නොවේ').required('අවශ්‍ය වේ'),
+    email: yup
+      .string()
+      .transform((value) => {
+        const trimmedValue = typeof value === 'string' ? value.trim() : value
+        return trimmedValue ?? ''
+      })
+      .test('valid-email-when-provided', 'වලංගු නොවේ', (value) => !value || yup.string().email().isValidSync(value)),
     photoUrl: yup.string().optional(),
     activeStatus: yup.boolean().required(),
     area: yup.string().required('අවශ්‍ය වේ'),
     systemRole: yup.mixed<CommunityMember['systemRole']>().required('අවශ්‍ය වේ'),
   }),
-  loginPassword: yup.string().min(6, 'මුරපදය අවම වශයෙන් අක්ෂර 6ක් විය යුතුය').optional(),
+  loginPassword: optionalPasswordField,
   confirmLoginPassword: yup
     .string()
+    .transform((value) => {
+      const trimmedValue = typeof value === 'string' ? value.trim() : value
+      return trimmedValue ? trimmedValue : undefined
+    })
     .oneOf([yup.ref('loginPassword')], 'මුරපද දෙක සමාන විය යුතුය')
     .optional(),
   spouse: yup.object().optional(),
@@ -528,14 +547,13 @@ const MembersPage = () => {
     const duplicateNic = members.find(
       (member) => member.nic === values.member.nic && member.id !== editingMemberId,
     )
-    const duplicateEmail = members.find(
-      (member) => member.email.toLowerCase() === values.member.email.toLowerCase() && member.id !== editingMemberId,
-    )
-    const duplicateUserEmail = users.find(
-      (user) =>
-        user.email.toLowerCase() === values.member.email.toLowerCase() &&
-        user.memberId !== editingMemberId,
-    )
+    const normalizedEmail = values.member.email.trim().toLowerCase()
+    const duplicateEmail = normalizedEmail
+      ? members.find((member) => member.email.trim().toLowerCase() === normalizedEmail && member.id !== editingMemberId)
+      : undefined
+    const duplicateUserEmail = normalizedEmail
+      ? users.find((user) => user.email.trim().toLowerCase() === normalizedEmail && user.memberId !== editingMemberId)
+      : undefined
 
     if (duplicateNic) {
       setError('member.nic', {
@@ -830,7 +848,7 @@ const MembersPage = () => {
                           {selectedMember.memberNumber} | {selectedMember.nic}
                         </Typography>
                         <Typography variant="body2" color="text.secondary">
-                          {selectedMember.phoneNumber} | {selectedMember.email}
+                          {selectedMember.phoneNumber} | {selectedMember.email || 'විද්‍යුත් තැපෑල නොමැත'}
                         </Typography>
                         <Typography variant="body2" color="text.secondary">
                           {selectedMember.address}
@@ -945,7 +963,7 @@ const MembersPage = () => {
                     <ControllerText name="member.phoneNumber" label="දුරකථන අංකය" />
                   </Grid>
                   <Grid size={{ xs: 12, md: 12 }}>
-                    <ControllerText name="member.email" label="විද්‍යුත් තැපෑල" />
+                    <ControllerText name="member.email" label="විද්‍යුත් තැපෑල (විකල්ප)" />
                   </Grid>
                   <Grid size={{ xs: 12, md: 6 }}>
                     <ControllerText
@@ -1109,7 +1127,7 @@ const MembersPage = () => {
                           දුරකථන / විද්‍යුත් තැපෑල
                         </Typography>
                         <Typography>
-                          {selectedMember.phoneNumber} / {selectedMember.email}
+                          {selectedMember.phoneNumber} / {selectedMember.email || 'විද්‍යුත් තැපෑල නොමැත'}
                         </Typography>
                       </Grid>
                       <Grid size={{ xs: 12, md: 6 }}>

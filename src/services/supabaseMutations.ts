@@ -22,6 +22,17 @@ const requireSupabase = () => {
   return supabase
 }
 
+const buildInternalLoginEmail = (member: CommunityMember) => {
+  const normalizedMemberNumber = member.memberNumber
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+
+  const fallbackKey = normalizedMemberNumber ? `${normalizedMemberNumber}-${member.id}` : member.id
+  return `${fallbackKey}@members.samithiya.local`
+}
+
 export const refreshDataFromSupabase = async (dispatch: AppDispatch): Promise<AppDataState> => {
   const remoteData = await fetchAppDataFromSupabase()
   dispatch(replaceData(remoteData))
@@ -86,6 +97,7 @@ export const insertAuditLogRemote = async (auditLog: AuditLog) => {
 
 export const upsertMemberRemote = async (member: CommunityMember, loginPassword?: string) => {
   const client = requireSupabase()
+  const normalizedMemberEmail = member.email.trim()
 
   const { error: memberError } = await client.from('members').upsert({
     id: member.id,
@@ -96,7 +108,7 @@ export const upsertMemberRemote = async (member: CommunityMember, loginPassword?
     gender: member.gender,
     address: member.address,
     phone_number: member.phoneNumber,
-    email: member.email,
+    email: normalizedMemberEmail,
     area: member.area,
     system_role: member.systemRole,
     photo_url: member.photoUrl ?? null,
@@ -112,19 +124,35 @@ export const upsertMemberRemote = async (member: CommunityMember, loginPassword?
   const { data: existingUserRows, error: existingUserError } = await client
     .from('users')
     .select('id, email, created_at')
-    .or(`member_id.eq.${member.id},email.eq.${member.email}`)
+    .eq('member_id', member.id)
     .limit(1)
 
   if (existingUserError) {
     throw existingUserError
   }
 
-  const existingUser = existingUserRows?.[0]
+  let existingUser = existingUserRows?.[0]
+
+  if (!existingUser && normalizedMemberEmail) {
+    const { data: matchingEmailUsers, error: matchingEmailUserError } = await client
+      .from('users')
+      .select('id, email, created_at')
+      .ilike('email', normalizedMemberEmail)
+      .limit(1)
+
+    if (matchingEmailUserError) {
+      throw matchingEmailUserError
+    }
+
+    existingUser = matchingEmailUsers?.[0]
+  }
+
+  const nextUserEmail = normalizedMemberEmail || existingUser?.email || buildInternalLoginEmail(member)
   const nextUser: AppUser = {
     id: existingUser?.id ?? crypto.randomUUID(),
     memberId: member.id,
     fullName: member.fullName,
-    email: member.email,
+    email: nextUserEmail,
     role: member.systemRole,
     activeStatus: member.activeStatus,
     createdAt: existingUser?.created_at ?? member.createdAt,
