@@ -9,6 +9,7 @@ import type {
   MemberProfileUpdateRequest,
   MonthlyFeeConfig,
   MonthlyFeePayment,
+  SamithiConstitution,
   SamithiReport,
   SystemSetting,
 } from '../types/domain'
@@ -26,6 +27,7 @@ const emptyDataState = (): AppDataState => ({
   emailRecipients: [],
   settings: [],
   samithiReports: [],
+  samithiConstitutions: [],
   monthlyFeeConfigs: [],
   monthlyFeePayments: [],
   financeEntries: [],
@@ -50,6 +52,7 @@ export const normalizeAppDataForSupabase = (data: AppDataState): AppDataState =>
   const settingIdMap = buildIdMap(data.settings)
   const auditIdMap = buildIdMap(data.auditLogs)
   const reportIdMap = buildIdMap(data.samithiReports)
+  const constitutionIdMap = buildIdMap(data.samithiConstitutions)
   const feeConfigIdMap = buildIdMap(data.monthlyFeeConfigs)
   const feePaymentIdMap = buildIdMap(data.monthlyFeePayments)
   const financeIdMap = buildIdMap(data.financeEntries)
@@ -118,6 +121,10 @@ export const normalizeAppDataForSupabase = (data: AppDataState): AppDataState =>
       ...item,
       id: reportIdMap.get(item.id) ?? item.id,
     })),
+    samithiConstitutions: data.samithiConstitutions.map((item) => ({
+      ...item,
+      id: constitutionIdMap.get(item.id) ?? item.id,
+    })),
     monthlyFeeConfigs,
     monthlyFeePayments,
     financeEntries: data.financeEntries.map((item) => ({
@@ -148,6 +155,7 @@ export const fetchAppDataFromSupabase = async (): Promise<AppDataState> => {
     settingsResult,
     auditLogsResult,
     samithiReportsResult,
+    samithiConstitutionsResult,
     monthlyFeeConfigsResult,
     monthlyFeePaymentsResult,
     financeEntriesResult,
@@ -161,6 +169,7 @@ export const fetchAppDataFromSupabase = async (): Promise<AppDataState> => {
     supabase.from('system_settings').select('*').order('setting_key', { ascending: true }),
     supabase.from('audit_logs').select('*').order('created_at', { ascending: false }),
     supabase.from('samithi_reports').select('*').order('uploaded_at', { ascending: false }),
+    supabase.from('samithi_constitutions').select('*').order('uploaded_at', { ascending: false }),
     supabase.from('monthly_fee_configs').select('*').order('effective_month', { ascending: false }),
     supabase.from('monthly_fee_payments').select('*').order('paid_date', { ascending: false }),
     supabase.from('finance_entries').select('*').order('entry_date', { ascending: false }),
@@ -176,6 +185,7 @@ export const fetchAppDataFromSupabase = async (): Promise<AppDataState> => {
     settingsResult.error,
     auditLogsResult.error,
     samithiReportsResult.error,
+    samithiConstitutionsResult.error,
     monthlyFeeConfigsResult.error,
     monthlyFeePaymentsResult.error,
     financeEntriesResult.error,
@@ -284,6 +294,19 @@ export const fetchAppDataFromSupabase = async (): Promise<AppDataState> => {
         id: row.id,
         title: row.title,
         meetingDate: row.meeting_date,
+        description: row.description,
+        fileName: row.file_name,
+        fileUrl: row.file_url,
+        uploadedBy: row.uploaded_by,
+        uploadedAt: row.uploaded_at,
+      }),
+    ),
+    samithiConstitutions: (samithiConstitutionsResult.data ?? []).map(
+      (row): SamithiConstitution => ({
+        id: row.id,
+        title: row.title,
+        versionLabel: row.version_label,
+        effectiveDate: row.effective_date,
         description: row.description,
         fileName: row.file_name,
         fileUrl: row.file_url,

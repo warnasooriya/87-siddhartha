@@ -9,6 +9,7 @@ import type {
   MemberProfileUpdateRequest,
   MonthlyFeeConfig,
   MonthlyFeePayment,
+  SamithiConstitution,
   SamithiReport,
   SystemSetting,
 } from '../types/domain'
@@ -21,6 +22,7 @@ type StorageShape = {
   emailRecipients: EmailRecipient[]
   settings: SystemSetting[]
   samithiReports: SamithiReport[]
+  samithiConstitutions: SamithiConstitution[]
   monthlyFeeConfigs: MonthlyFeeConfig[]
   monthlyFeePayments: MonthlyFeePayment[]
   financeEntries: FinanceEntry[]
@@ -221,6 +223,8 @@ const seedSamithiReports: SamithiReport[] = [
   },
 ]
 
+const seedSamithiConstitutions: SamithiConstitution[] = []
+
 const seedMonthlyFeeConfigs: MonthlyFeeConfig[] = [
   {
     id: 'fee-config-1',
@@ -283,6 +287,7 @@ const defaultData: StorageShape = {
   emailRecipients: seedEmailRecipients,
   settings: seedSettings,
   samithiReports: seedSamithiReports,
+  samithiConstitutions: seedSamithiConstitutions,
   monthlyFeeConfigs: seedMonthlyFeeConfigs,
   monthlyFeePayments: seedMonthlyFeePayments,
   financeEntries: seedFinanceEntries,
@@ -299,6 +304,7 @@ export const getEmptyAppData = (): StorageShape => ({
   emailRecipients: [],
   settings: [],
   samithiReports: [],
+  samithiConstitutions: [],
   monthlyFeeConfigs: [],
   monthlyFeePayments: [],
   financeEntries: [],
@@ -313,6 +319,7 @@ const mergeWithDefaultData = (rawData: Partial<StorageShape>): StorageShape => (
   emailRecipients: rawData.emailRecipients ?? defaultData.emailRecipients,
   settings: rawData.settings ?? defaultData.settings,
   samithiReports: rawData.samithiReports ?? defaultData.samithiReports,
+  samithiConstitutions: rawData.samithiConstitutions ?? defaultData.samithiConstitutions,
   monthlyFeeConfigs: rawData.monthlyFeeConfigs ?? defaultData.monthlyFeeConfigs,
   monthlyFeePayments: rawData.monthlyFeePayments ?? defaultData.monthlyFeePayments,
   financeEntries: rawData.financeEntries ?? defaultData.financeEntries,

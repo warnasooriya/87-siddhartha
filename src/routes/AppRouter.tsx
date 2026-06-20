@@ -16,6 +16,7 @@ const MembersPage = lazy(() => import('../features/members/MembersPage'))
 const BirthdaysPage = lazy(() => import('../features/birthdays/BirthdaysPage'))
 const DocumentsPage = lazy(() => import('../features/documents/DocumentsPage'))
 const SamithiReportsPage = lazy(() => import('../features/documents/SamithiReportsPage'))
+const ConstitutionPage = lazy(() => import('../features/documents/ConstitutionPage'))
 const FeesPage = lazy(() => import('../features/documents/FeesPage'))
 const FinancePage = lazy(() => import('../features/finance/FinancePage'))
 const AuditPage = lazy(() => import('../features/audit/AuditPage'))
@@ -62,6 +63,7 @@ const AppRouter = () => (
         <Route path="/members" element={<MembersPage />} />
         <Route path="/birthdays" element={<BirthdaysPage />} />
         <Route path="/samithi-reports" element={<SamithiReportsPage />} />
+        <Route path="/constitution" element={<ConstitutionPage />} />
         <Route path="/fees" element={<FeesPage />} />
         <Route path="/finance" element={<FinancePage />} />
         <Route path="/profile" element={<ProfilePage />} />

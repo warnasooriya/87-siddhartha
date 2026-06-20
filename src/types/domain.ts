@@ -128,6 +128,19 @@ export interface SamithiReport {
   uploadedAt: string
 }
 
+export interface SamithiConstitution {
+  id: string
+  title: string
+  versionLabel: string
+  effectiveDate: string
+  description: string
+  content: string
+  fileName?: string
+  fileUrl?: string
+  uploadedBy: string
+  uploadedAt: string
+}
+
 export interface MonthlyFeeConfig {
   id: string
   title: string

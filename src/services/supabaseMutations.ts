@@ -11,6 +11,7 @@ import type {
   MemberProfileUpdateRequest,
   MonthlyFeeConfig,
   MonthlyFeePayment,
+  SamithiConstitution,
   SamithiReport,
   SystemSetting,
 } from '../types/domain'
@@ -268,6 +269,24 @@ export const insertSamithiReportRemote = async (report: SamithiReport) => {
     file_url: report.fileUrl,
     uploaded_by: report.uploadedBy,
     uploaded_at: report.uploadedAt,
+  })
+  if (error) {
+    throw error
+  }
+}
+
+export const insertSamithiConstitutionRemote = async (constitution: SamithiConstitution) => {
+  const client = requireSupabase()
+  const { error } = await client.from('samithi_constitutions').insert({
+    id: constitution.id,
+    title: constitution.title,
+    version_label: constitution.versionLabel,
+    effective_date: constitution.effectiveDate,
+    description: constitution.description,
+    file_name: constitution.fileName,
+    file_url: constitution.fileUrl,
+    uploaded_by: constitution.uploadedBy,
+    uploaded_at: constitution.uploadedAt,
   })
   if (error) {
     throw error

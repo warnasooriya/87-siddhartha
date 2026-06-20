@@ -25,6 +25,20 @@ const readFileAsDataUrl = (file: File) =>
     reader.readAsDataURL(file)
   })
 
+const buildBlobFromDataUrl = (dataUrl: string) => {
+  const [metadata, base64Content] = dataUrl.split(',')
+  const mimeTypeMatch = metadata.match(/data:(.*?);base64/)
+  const mimeType = mimeTypeMatch?.[1] ?? 'application/octet-stream'
+  const binary = window.atob(base64Content)
+  const bytes = new Uint8Array(binary.length)
+
+  for (let index = 0; index < binary.length; index += 1) {
+    bytes[index] = binary.charCodeAt(index)
+  }
+
+  return new Blob([bytes], { type: mimeType })
+}
+
 const SamithiReportsPage = () => {
   const dispatch = useAppDispatch()
   const { enqueueSnackbar } = useSnackbar()
@@ -98,6 +112,28 @@ const SamithiReportsPage = () => {
     }
   }
 
+  const handleViewReport = (report: SamithiReport) => {
+    if (!report.fileUrl || report.fileUrl === '#') {
+      enqueueSnackbar('මෙම වාර්තාව සඳහා ගොනුවක් නොමැත', { variant: 'warning' })
+      return
+    }
+
+    try {
+      if (report.fileUrl.startsWith('data:')) {
+        const objectUrl = URL.createObjectURL(buildBlobFromDataUrl(report.fileUrl))
+        window.open(objectUrl, '_blank', 'noopener,noreferrer')
+        window.setTimeout(() => {
+          URL.revokeObjectURL(objectUrl)
+        }, 60_000)
+        return
+      }
+
+      window.open(report.fileUrl, '_blank', 'noopener,noreferrer')
+    } catch {
+      enqueueSnackbar('වාර්තාව විවෘත කිරීමට නොහැකි විය', { variant: 'error' })
+    }
+  }
+
   return (
     <Stack spacing={3}>
       <Stack spacing={1}>
@@ -168,14 +204,7 @@ const SamithiReportsPage = () => {
                         {report.description || 'විස්තර නැත'}
                       </Typography>
                     </Stack>
-                    <Button
-                      component="a"
-                      href={report.fileUrl}
-                      target="_blank"
-                      rel="noreferrer"
-                      variant="outlined"
-                      startIcon={<VisibilityOutlinedIcon />}
-                    >
+                    <Button variant="outlined" startIcon={<VisibilityOutlinedIcon />} onClick={() => handleViewReport(report)}>
                       බලන්න
                     </Button>
                   </Stack>

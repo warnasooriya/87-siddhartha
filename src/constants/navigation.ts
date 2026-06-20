@@ -3,6 +3,7 @@ import DescriptionOutlinedIcon from '@mui/icons-material/DescriptionOutlined'
 import FactCheckOutlinedIcon from '@mui/icons-material/FactCheckOutlined'
 import FolderSharedOutlinedIcon from '@mui/icons-material/FolderSharedOutlined'
 import Groups2OutlinedIcon from '@mui/icons-material/Groups2Outlined'
+import GavelOutlinedIcon from '@mui/icons-material/GavelOutlined'
 import AccountBalanceWalletOutlinedIcon from '@mui/icons-material/AccountBalanceWalletOutlined'
 import PaymentsOutlinedIcon from '@mui/icons-material/PaymentsOutlined'
 import PersonOutlineOutlinedIcon from '@mui/icons-material/PersonOutlineOutlined'
@@ -49,6 +50,12 @@ export const navigationItems: NavigationItem[] = [
     label: 'සමිති වාර්තා',
     path: '/samithi-reports',
     icon: FolderSharedOutlinedIcon,
+    roles: ALL_USER_ROLES,
+  },
+  {
+    label: 'ව්‍යවස්ථාව',
+    path: '/constitution',
+    icon: GavelOutlinedIcon,
     roles: ALL_USER_ROLES,
   },
   {

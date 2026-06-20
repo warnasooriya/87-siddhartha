@@ -6,6 +6,8 @@ export const FULL_ACCESS_ROLES: UserRole[] = ['ADMIN', 'PRESIDENT', 'SECRETARY']
 
 export const FINANCE_ACCESS_ROLES: UserRole[] = ['ADMIN', 'PRESIDENT', 'SECRETARY', 'TREASURER']
 
+export const CONSTITUTION_MANAGE_ROLES: UserRole[] = ['ADMIN', 'SECRETARY']
+
 export const ROLE_LABELS: Record<UserRole, string> = {
   ADMIN: 'පරිපාලක',
   PRESIDENT: 'සභාපති',

@@ -11,6 +11,7 @@ import type {
   MemberProfileUpdateRequest,
   MonthlyFeeConfig,
   MonthlyFeePayment,
+  SamithiConstitution,
   SamithiReport,
   SystemSetting,
   UserRole,
@@ -38,6 +39,7 @@ export type AppDataState = {
   emailRecipients: EmailRecipient[]
   settings: SystemSetting[]
   samithiReports: SamithiReport[]
+  samithiConstitutions: SamithiConstitution[]
   monthlyFeeConfigs: MonthlyFeeConfig[]
   monthlyFeePayments: MonthlyFeePayment[]
   financeEntries: FinanceEntry[]
